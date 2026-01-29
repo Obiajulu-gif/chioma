@@ -1,31 +1,11 @@
 #![no_std]
 #![allow(clippy::too_many_arguments)]
-use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, vec, Address, Bytes, Env, String, Vec,
-};
+use soroban_sdk::{contract, contractevent, contractimpl, vec, Address, Env, String, Vec};
 
 mod types;
-use types::{AgreementStatus, DataKey, PaymentRecord, RentAgreement, UserProfile};
-
-const MAX_DATA_HASH_LEN: u32 = 128;
-const MIN_UPDATE_INTERVAL: u64 = 60;
+use types::{AgreementStatus, DataKey, Error, PaymentRecord, RentAgreement};
 
 pub mod escrow;
-
-#[contracterror]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
-#[repr(u32)]
-pub enum Error {
-    AgreementAlreadyExists = 4,
-    InvalidAmount = 5,
-    InvalidDate = 6,
-    InvalidCommissionRate = 7,
-    PaymentNotFound = 11,
-    InvalidAccountType = 12,
-    InvalidDataHash = 13,
-    ProfileNotFound = 14,
-    RateLimited = 15,
-}
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -93,6 +73,8 @@ impl Contract {
             end_date,
             agent_commission_rate,
             status: AgreementStatus::Draft,
+            total_rent_paid: 0,
+            payment_count: 0,
         };
 
         // Store agreement
@@ -299,7 +281,6 @@ impl Contract {
         Ok(())
     }
 }
-mod types;
 mod payment;
 mod test;
 
