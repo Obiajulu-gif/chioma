@@ -299,5 +299,10 @@ impl Contract {
         Ok(())
     }
 }
-
+mod types;
+mod payment;
 mod test;
+
+// Only compile the payment tests during `cargo test`
+#[cfg(test)]
+mod payment_tests;
