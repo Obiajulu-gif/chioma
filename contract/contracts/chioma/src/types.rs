@@ -54,3 +54,21 @@ pub enum DataKey {
     PaymentCount,
     UserProfile(Address),
 }
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum Error {
+    AgreementAlreadyExists = 4,
+    InvalidAmount = 5,
+    InvalidDate = 6,
+    InvalidCommissionRate = 7,
+    AgreementNotActive = 10,
+    PaymentNotFound = 11,
+    PaymentFailed = 12,
+    // Add these:
+    RateLimited = 20,
+    ProfileNotFound = 21,
+    InvalidAccountType = 22,
+    InvalidDataHash = 23,
+}

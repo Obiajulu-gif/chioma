@@ -7,8 +7,8 @@ use soroban_sdk::{
 mod types;
 use types::{AgreementStatus, DataKey, PaymentRecord, RentAgreement, UserProfile};
 
-const MAX_DATA_HASH_LEN: u32 = 128;
-const MIN_UPDATE_INTERVAL: u64 = 60;
+const MAX_DATA_HASH_LEN: usize = 64;
+const MIN_UPDATE_INTERVAL: u64 = 3600;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
