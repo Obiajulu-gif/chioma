@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, Bytes, String};
+use soroban_sdk::{contracterror, contracttype, Address, Bytes, Map,String};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -28,6 +28,28 @@ pub struct RentAgreement {
     pub total_rent_paid: i128,
     pub payment_count: u32,
     pub signed_at: Option<u64>,
+    pub payment_token: Address,
+    pub next_payment_due: u64,
+    pub payment_history: Map<u32, PaymentSplit>,
+}
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum Error {
+    AgreementAlreadyExists = 4,
+    InvalidAmount = 5,
+    InvalidDate = 6,
+    InvalidCommissionRate = 7,
+    AgreementNotActive = 10,
+    PaymentNotFound = 11,
+    PaymentFailed = 12,
+    AgreementNotFound = 13,
+    NotTenant = 14,
+    InvalidState = 15,
+    Expired = 16,
+    InvalidPaymentAmount = 17,
+    PaymentNotDue = 18,
 }
 
 #[contracttype]
@@ -49,6 +71,11 @@ pub struct UserProfile {
     pub r#type: u32,
     pub updated: u64,
     pub data_hash: Bytes,
+pub struct PaymentSplit {
+    pub landlord_amount: i128,
+    pub platform_amount: i128,
+    pub token: Address,
+    pub payment_date: u64,
 }
 
 #[contracttype]
@@ -80,4 +107,5 @@ pub enum Error {
     ProfileNotFound = 21,
     InvalidAccountType = 22,
     InvalidDataHash = 23,
+    PlatformFeeCollector,
 }
