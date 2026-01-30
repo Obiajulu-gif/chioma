@@ -3,7 +3,7 @@
 use super::*;
 use soroban_sdk::{
     testutils::{Address as _, Events, Ledger},
-    vec, Address, Env, String,
+    vec, Address, Bytes, Env, String,
 };
 
 #[test]
@@ -36,14 +36,15 @@ fn test_profile_crud_success() {
     let client = create_contract(&env);
     let account = Address::generate(&env);
     let data_hash = Bytes::from_slice(&env, b"bafybeigdyrzt6profilehash");
+    let expected_updated = env.ledger().timestamp();
 
-    client.update_profile(&account, &1u8, &data_hash);
+    client.update_profile(&account, &1u32, &data_hash);
 
     let profile = client.get_profile(&account);
-    assert_eq!(profile.account_id, account);
-    assert_eq!(profile.account_type, 1u8);
+    assert_eq!(profile.version, String::from_str(&env, "1.0"));
+    assert_eq!(profile.r#type, 1u32);
+    assert_eq!(profile.updated, expected_updated);
     assert_eq!(profile.data_hash, data_hash);
-    assert_eq!(profile.is_verified, false);
 
     client.delete_profile(&account);
 
@@ -56,7 +57,7 @@ fn test_profile_crud_success() {
 }
 
 #[test]
-#[should_panic(expected = "Error(Contract, #12)")]
+#[should_panic(expected = "Error(Contract, #22)")]
 fn test_profile_invalid_account_type() {
     let env = Env::default();
     env.mock_all_auths();
@@ -65,11 +66,11 @@ fn test_profile_invalid_account_type() {
     let account = Address::generate(&env);
     let data_hash = Bytes::from_slice(&env, b"bafybeigdyrzt6profilehash");
 
-    client.update_profile(&account, &4u8, &data_hash);
+    client.update_profile(&account, &4u32, &data_hash);
 }
 
 #[test]
-#[should_panic(expected = "Error(Contract, #13)")]
+#[should_panic(expected = "Error(Contract, #23)")]
 fn test_profile_invalid_data_hash() {
     let env = Env::default();
     env.mock_all_auths();
@@ -79,11 +80,11 @@ fn test_profile_invalid_data_hash() {
     let long_hash = vec![0u8; 129];
     let data_hash = Bytes::from_slice(&env, long_hash.as_slice());
 
-    client.update_profile(&account, &2u8, &data_hash);
+    client.update_profile(&account, &2u32, &data_hash);
 }
 
 #[test]
-#[should_panic(expected = "Error(Contract, #15)")]
+#[should_panic(expected = "Error(Contract, #20)")]
 fn test_profile_rate_limited() {
     let env = Env::default();
     env.mock_all_auths();
@@ -92,8 +93,8 @@ fn test_profile_rate_limited() {
     let account = Address::generate(&env);
     let data_hash = Bytes::from_slice(&env, b"bafybeigdyrzt6profilehash");
 
-    client.update_profile(&account, &1u8, &data_hash);
-    client.update_profile(&account, &1u8, &data_hash);
+    client.update_profile(&account, &1u32, &data_hash);
+    client.update_profile(&account, &1u32, &data_hash);
 }
 
 #[test]
@@ -105,7 +106,7 @@ fn test_profile_requires_auth() {
     let account = Address::generate(&env);
     let data_hash = Bytes::from_slice(&env, b"bafybeigdyrzt6profilehash");
 
-    client.update_profile(&account, &1u8, &data_hash);
+    client.update_profile(&account, &1u32, &data_hash);
 }
 
 #[test]

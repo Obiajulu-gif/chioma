@@ -1,9 +1,13 @@
 #![no_std]
 #![allow(clippy::too_many_arguments)]
-use soroban_sdk::{contract, contractevent, contractimpl, vec, Address, Env, String, Vec};
+use soroban_sdk::{contract, contractevent, contractimpl, vec, Address, Bytes, Env, String, Vec};
 
 mod types;
-use types::{AgreementStatus, DataKey, Error, PaymentRecord, RentAgreement};
+use types::{AgreementStatus, DataKey, Error, PaymentRecord, RentAgreement, UserProfile};
+
+const SEP29_PROFILE_VERSION: &str = "1.0";
+const MAX_DATA_HASH_LEN: u32 = 128;
+const MIN_UPDATE_INTERVAL: u64 = 60;
 
 pub mod escrow;
 
@@ -248,7 +252,7 @@ impl Contract {
     pub fn update_profile(
         env: Env,
         account: Address,
-        account_type: u8,
+        account_type: u32,
         data_hash: Bytes,
     ) -> Result<(), Error> {
         account.require_auth();
@@ -262,24 +266,16 @@ impl Contract {
             .persistent()
             .get::<DataKey, UserProfile>(&DataKey::UserProfile(account.clone()))
         {
-            if now.saturating_sub(existing.last_updated) < MIN_UPDATE_INTERVAL {
+            if now.saturating_sub(existing.updated) < MIN_UPDATE_INTERVAL {
                 return Err(Error::RateLimited);
             }
         }
 
-        let is_verified = env
-            .storage()
-            .persistent()
-            .get::<DataKey, UserProfile>(&DataKey::UserProfile(account.clone()))
-            .map(|profile| profile.is_verified)
-            .unwrap_or(false);
-
         let profile = UserProfile {
-            account_id: account.clone(),
-            account_type,
+            version: String::from_str(&env, SEP29_PROFILE_VERSION),
+            r#type: account_type,
+            updated: now,
             data_hash,
-            last_updated: now,
-            is_verified,
         };
 
         env.storage()
@@ -330,7 +326,7 @@ impl Contract {
         }
     }
 
-    fn validate_account_type(account_type: &u8) -> Result<(), Error> {
+    fn validate_account_type(account_type: &u32) -> Result<(), Error> {
         if !(1..=3).contains(account_type) {
             return Err(Error::InvalidAccountType);
         }

@@ -9,9 +9,9 @@
 ## Storage Strategy and Optimizations
 
 - Profiles are stored under a single `DataKey::UserProfile(Address)` entry in persistent storage to minimize key fan-out and reads.
-- `update_profile` reuses the existing `is_verified` flag rather than duplicating verification state in storage.
+- The stored profile follows the SEP-29 map shape (`version`, `type`, `updated`, `data_hash`), reducing extra fields.
 - Validation is done early to avoid unnecessary reads/writes.
-- Rate limiting uses the stored `last_updated` field to avoid additional counters.
+- Rate limiting uses the stored `updated` field to avoid additional counters.
 
 ## Measurement Approach
 

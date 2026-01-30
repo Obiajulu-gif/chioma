@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, String};
+use soroban_sdk::{contracterror, contracttype, Address, Bytes, String};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -30,6 +30,37 @@ pub struct RentAgreement {
     pub signed_at: Option<u64>,
 }
 
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PaymentRecord {
+    pub agreement_id: String,
+    pub payment_number: u32,
+    pub amount: i128,
+    pub landlord_amount: i128,
+    pub agent_amount: i128,
+    pub timestamp: u64,
+    pub tenant: Address,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct UserProfile {
+    pub version: String,
+    pub r#type: u32,
+    pub updated: u64,
+    pub data_hash: Bytes,
+}
+
+#[contracttype]
+pub enum DataKey {
+    Agreement(String),
+    AgreementCount,
+    Payment(String),
+    PaymentRecord(String, u32),
+    PaymentCount,
+    UserProfile(Address),
+}
+
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
@@ -45,41 +76,6 @@ pub enum Error {
     NotTenant = 14,
     InvalidState = 15,
     Expired = 16,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PaymentRecord {
-    pub agreement_id: String,
-    pub payment_number: u32,
-    pub amount: i128,
-    pub landlord_amount: i128,
-    pub agent_amount: i128,
-    pub timestamp: u64,
-    pub tenant: Address,
-}
-
-#[contracttype]
-pub enum DataKey {
-    Agreement(String),
-    AgreementCount,
-    Payment(String),
-    PaymentRecord(String, u32),
-    PaymentCount,
-}
-
-#[contracterror]
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[repr(u32)]
-pub enum Error {
-    AgreementAlreadyExists = 4,
-    InvalidAmount = 5,
-    InvalidDate = 6,
-    InvalidCommissionRate = 7,
-    AgreementNotActive = 10,
-    PaymentNotFound = 11,
-    PaymentFailed = 12,
-    // Add these:
     RateLimited = 20,
     ProfileNotFound = 21,
     InvalidAccountType = 22,
